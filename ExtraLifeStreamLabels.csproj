@@ -5,8 +5,8 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{DF6C6C1E-1DE6-40B7-8D20-0FDAE1A8CE70}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>ExtraLifeStreamLabels</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WireJunky.ExtraLife</RootNamespace>
     <AssemblyName>ExtraLifeStreamLabels</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -47,7 +47,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>WireJunky.ExtraLife.ExtraLifeStreamLabels.Program</StartupObject>
+    <StartupObject>WireJunky.ExtraLife.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -67,19 +67,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExtraLifeStreamLabels.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ExtraLifeStreamLabels.Designer.cs">
-      <DependentUpon>ExtraLifeStreamLabels.cs</DependentUpon>
+    <Compile Include="ExtraLifeStreamLabelsService.cs" />
+    <Compile Include="ExtraLifeStreamLabelsService.Designer.cs">
+      <DependentUpon>ExtraLifeStreamLabelsService.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="ProjectInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ProjectInstaller.Designer.cs">
-      <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -99,11 +91,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ProjectInstaller.resx">
-      <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\ServiceFramework\ServiceFramework.csproj">
+      <Project>{D8784F36-F44B-46F5-BC42-F7EA3AD93547}</Project>
+      <Name>ServiceFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="DonorsData\DonorData.csproj">
       <Project>{862B482F-E590-4E46-B441-2292AC75B5F7}</Project>
       <Name>DonorData</Name>
@@ -119,7 +110,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>net stop ExtraLifeStreamLabels
-Exit /b 0</PreBuildEvent>
+    <PreBuildEvent>REM net stop ExtraLifeStreamLabels
+REM Exit /b 0</PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WireJunky.ExtraLife.DonorData;
 using WireJunky.ExtraLife.ParticipantDataModel;
+using WireJunky.ServiceFramework;
 
 #pragma warning disable 4014
 
 // ReSharper disable UnusedVariable
 
 // ReSharper disable once CheckNamespace
-namespace WireJunky.ExtraLife.ExtraLifeStreamLabels
+namespace WireJunky.ExtraLife
 {
-    public partial class ExtraLifeStreamLabels : ServiceBase
+    public partial class ExtraLifeStreamLabelsService : IService
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private const string Url = "https://www.extra-life.org/api/";
@@ -29,28 +28,13 @@ namespace WireJunky.ExtraLife.ExtraLifeStreamLabels
 
         private readonly string _teamEndpoint = $"teams/{ConfigurationManager.AppSettings["TeamId"]}";
 
-        public ExtraLifeStreamLabels()
+        public ExtraLifeStreamLabelsService()
         {
             InitializeComponent();
-
-            const string source = "Extra Life Stream Labels Service";
-            const string log = "Application";
-
-            if (!EventLog.SourceExists(source))
-                EventLog.CreateEventSource(source, log);
         }
 
-        protected override void OnStart(string[] args)
-        {
-            BeginFetchingExtraLifeData();
-        }
 
-        protected override void OnStop()
-        {
-            _cts.Cancel();
-        }
-
-        private async Task BeginFetchingExtraLifeData()
+        private async Task FetchExtraLifeData()
         {
             if (!Directory.Exists($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}"))
                 Directory.CreateDirectory($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}");
@@ -72,6 +56,8 @@ namespace WireJunky.ExtraLife.ExtraLifeStreamLabels
 
                             string progress = $"{currentParticipantData.SumDonations} / {currentParticipantData.FundraisingGoal} ( {percentage}% )";
                             progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0, progress.Length);
+
+                            Console.WriteLine(progress);
                         }
                     }
                 }
@@ -93,12 +79,24 @@ namespace WireJunky.ExtraLife.ExtraLifeStreamLabels
                                 string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
                                 string donation = $"{donorName}: ${mostRecentDataModel.Amount}";
                                 lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
+
+                                Console.WriteLine(donation);
                             }
                         }
                     }
                     await Task.Delay(new TimeSpan(0, 0, 0, 15), _cts.Token);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _cts.Cancel();
+        }
+
+        public void Start()
+        {
+            FetchExtraLifeData();
         }
     }
 }

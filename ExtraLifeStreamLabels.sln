@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParticipantDataModel", "Par
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DonorData", "DonorsData\DonorData.csproj", "{862B482F-E590-4E46-B441-2292AC75B5F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamData", "TeamData\TeamData.csproj", "{7095C693-B963-4197-93A0-88F11B81CBB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamData", "TeamData\TeamData.csproj", "{7095C693-B963-4197-93A0-88F11B81CBB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFramework", "..\ServiceFramework\ServiceFramework.csproj", "{D8784F36-F44B-46F5-BC42-F7EA3AD93547}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{7095C693-B963-4197-93A0-88F11B81CBB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7095C693-B963-4197-93A0-88F11B81CBB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7095C693-B963-4197-93A0-88F11B81CBB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8784F36-F44B-46F5-BC42-F7EA3AD93547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8784F36-F44B-46F5-BC42-F7EA3AD93547}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8784F36-F44B-46F5-BC42-F7EA3AD93547}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8784F36-F44B-46F5-BC42-F7EA3AD93547}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
