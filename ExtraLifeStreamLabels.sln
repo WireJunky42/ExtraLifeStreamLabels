@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DonorData", "DonorsData\Don
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamData", "TeamData\TeamData.csproj", "{7095C693-B963-4197-93A0-88F11B81CBB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFramework", "..\ServiceFramework\ServiceFramework.csproj", "{D8784F36-F44B-46F5-BC42-F7EA3AD93547}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFramework", "ServiceFramework\ServiceFramework.csproj", "{D8784F36-F44B-46F5-BC42-F7EA3AD93547}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
