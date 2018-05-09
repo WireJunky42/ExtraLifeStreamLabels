@@ -10,3 +10,5 @@ Add your Participant Id, Team Id, and desired location for stream labels to be s
   </appSettings>
 
 ```
+
+Like my work?  Consider supporting my Extra Life efforts by vising http://wirejunky.net and making a donation.
