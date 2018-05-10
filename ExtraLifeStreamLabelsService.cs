@@ -82,6 +82,7 @@ namespace WireJunky.ExtraLife
 
                                 string progress = $"{currentParticipantData.SumDonations} / {currentParticipantData.FundraisingGoal} ( {percentage}% )";
                                 progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0, progress.Length);
+                                progressDataStream.SetLength(0);
                                 Console.WriteLine($"{progress}");
                             }
                         }
@@ -103,6 +104,7 @@ namespace WireJunky.ExtraLife
                                     DonorDataModel mostRecentDataModel = donorList[0];
                                     string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
                                     string donation = $"{donorName}: ${mostRecentDataModel.Amount}";
+                                    lastDonorData.SetLength(0);
                                     lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
                                     Console.WriteLine(donation);
                                 }
