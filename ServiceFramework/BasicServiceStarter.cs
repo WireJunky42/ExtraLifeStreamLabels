@@ -2,11 +2,15 @@
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
+using Microsoft.Win32;
+using NLog;
 
 namespace WireJunky.ServiceFramework
 {
     public class BasicServiceStarter
     {
+        private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public static void Run<T>(string serviceName) where T : IService, new()
         {
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
@@ -45,16 +49,10 @@ namespace WireJunky.ServiceFramework
                         }
                         break;
                 }
-                //using (var service = new T())
-                //{
-                //    service.Start();
-                //    Console.WriteLine("Running {0}, press any key to stop", serviceName);
-                //    Console.ReadKey();
-                //}
             }
             else
             {
-                ServiceBase.Run(new BasicService<T> { ServiceName = serviceName });
+                ServiceBase.Run(new BasicService<T> { CanHandlePowerEvent = true, ServiceName = serviceName });
             }
         }
     }
