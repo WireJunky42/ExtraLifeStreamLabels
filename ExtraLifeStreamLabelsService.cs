@@ -80,9 +80,9 @@ namespace WireJunky.ExtraLife
 
                                 int percentage = Convert.ToInt32(currentParticipantData.GetPercentOfGoalReached());
 
-                                string progress = $"{currentParticipantData.SumDonations} / {currentParticipantData.FundraisingGoal} ( {percentage}% )";
-                                progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0, progress.Length);
+                                string progress = $"${currentParticipantData.SumDonations} / ${currentParticipantData.FundraisingGoal} ( {percentage}% )";
                                 progressDataStream.SetLength(0);
+                                progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0, progress.Length);
                                 Console.WriteLine($"{progress}");
                             }
                         }
