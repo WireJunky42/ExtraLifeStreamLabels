@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace WireJunky.ExtraLife.ParticipantDataModel
 {
-    public partial class ParticipantData
+    public partial class ParticipantData : IDisposable
     {
         [JsonProperty("displayName")]
         public string DisplayName { get; set; }
@@ -62,6 +63,20 @@ namespace WireJunky.ExtraLife.ParticipantDataModel
             var hashcode = 159487263;
             hashcode = hashcode * -147852369 + NumDonations.GetHashCode();
             return hashcode;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 

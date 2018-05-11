@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 // To parse this JSON data, add NuGet 'Newtonsoft.Json' then do:
 //
@@ -8,7 +9,7 @@
 
 namespace WireJunky.ExtraLife.DonorData
 {
-    public partial class DonorDataModel
+    public partial class DonorDataModel:IDisposable
     {
         [JsonProperty("displayName")]
         public string DisplayName { get; set; }
@@ -33,6 +34,19 @@ namespace WireJunky.ExtraLife.DonorData
 
         [JsonProperty("teamID")]
         public long TeamId { get; set; }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 
     public partial class DonorDataModel

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -8,7 +7,6 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32;
 using NLog;
 using WireJunky.ExtraLife.DonorData;
 using WireJunky.ExtraLife.ParticipantDataModel;
@@ -30,32 +28,13 @@ namespace WireJunky.ExtraLife
         private readonly string _teamEndpoint = $"teams/{ConfigurationManager.AppSettings["TeamId"]}";
         private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private static Task _fetchData;
+        private static ParticipantData _previousParticipantData = new ParticipantData();
 
 
         public ExtraLifeStreamLabelsService()
         {
             InitializeComponent();
         }
-
-        private void SystemEventsOnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        {
-            //switch (e.Mode)
-            //{
-            //    case PowerModes.Resume:
-            //        Logger.Info($"Received Resume Power State");
-            //        _fetchData = FetchExtraLifeData();
-            //        break;
-            //    case PowerModes.StatusChange:
-            //        break;
-            //    case PowerModes.Suspend:
-            //        Logger.Info($"Received Suspend Power State");
-            //        _fetchData.Dispose();
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-        }
-
 
         private async Task FetchExtraLifeData()
         {
@@ -67,51 +46,8 @@ namespace WireJunky.ExtraLife
             {
                 while (!_cts.IsCancellationRequested)
                 {
-                    using (var clientParticipant = new HttpClient())
-                    {
-                        clientParticipant.BaseAddress = new Uri(Url);
-                        HttpResponseMessage responseParticipant = await clientParticipant.GetAsync(ParticipantEndpoint, _cts.Token);
-                        if (responseParticipant.IsSuccessStatusCode)
-                        {
-                            using (FileStream progressDataStream = new FileStream($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeProgress.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-                            {
-                                ParticipantData currentParticipantData =
-                                    ParticipantData.FromJson(responseParticipant.Content.ReadAsStringAsync().Result);
-
-                                int percentage = Convert.ToInt32(currentParticipantData.GetPercentOfGoalReached());
-
-                                string progress = $"${currentParticipantData.SumDonations} / ${currentParticipantData.FundraisingGoal} ( {percentage}% )";
-                                progressDataStream.SetLength(0);
-                                progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0, progress.Length);
-                                Console.WriteLine($"{progress}");
-                            }
-                        }
-                    }
+                    await GetParticipantData();
                     await Task.Delay(new TimeSpan(0, 0, 0, 15), _cts.Token);
-
-                    using (HttpClient clientDonations = new HttpClient())
-                    {
-                        clientDonations.BaseAddress = new Uri(Url);
-                        HttpResponseMessage responseDonations = await clientDonations.GetAsync(_donationsEndpoint, _cts.Token);
-                        if (responseDonations.IsSuccessStatusCode)
-                        {
-                            using (FileStream lastDonorData = new FileStream($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeMostRecentDonation.txt",
-                                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-                            {
-                                DonorDataModel[] donorList = DonorDataModel.FromJson(responseDonations.Content.ReadAsStringAsync().Result);
-                                if (donorList.Any())
-                                {
-                                    DonorDataModel mostRecentDataModel = donorList[0];
-                                    string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
-                                    string donation = $"{donorName}: ${mostRecentDataModel.Amount}";
-                                    lastDonorData.SetLength(0);
-                                    lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
-                                    Console.WriteLine(donation);
-                                }
-                            }
-                        }
-                        await Task.Delay(new TimeSpan(0, 0, 0, 15), _cts.Token);
-                    }
                 }
             }
             catch (Exception e)
@@ -120,17 +56,87 @@ namespace WireJunky.ExtraLife
             }
         }
 
+        private async Task GetParticipantData()
+        {
+            using (var clientParticipant = new HttpClient())
+            {
+                clientParticipant.BaseAddress = new Uri(Url);
+                HttpResponseMessage responseParticipant = await clientParticipant.GetAsync(ParticipantEndpoint, _cts.Token);
+                if (responseParticipant.IsSuccessStatusCode)
+                {
+                    using (ParticipantData currentParticipantData =
+                        ParticipantData.FromJson(responseParticipant.Content.ReadAsStringAsync().Result))
+                    {
+                        if (!currentParticipantData.Equals(_previousParticipantData))
+                        {
+                            _previousParticipantData = currentParticipantData;
+                            CreateParticipantStreamLabel(currentParticipantData);
+
+                            await GetDonationData();
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void CreateParticipantStreamLabel(ParticipantData currentParticipantData)
+        {
+            using (FileStream progressDataStream = new FileStream($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeProgress.txt",
+                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                int percentage =
+                    Convert.ToInt32(currentParticipantData.GetPercentOfGoalReached());
+                string progress =
+                    $"${currentParticipantData.SumDonations:N2} / ${currentParticipantData.FundraisingGoal:N2} ( {percentage}% )";
+                progressDataStream.SetLength(0);
+                progressDataStream.Write(new UTF8Encoding(true).GetBytes(progress), 0,
+                    progress.Length);
+                Console.WriteLine($"{progress}");
+            }
+        }
+
+        private async Task GetDonationData()
+        {
+            using (HttpClient clientDonations = new HttpClient())
+            {
+                clientDonations.BaseAddress = new Uri(Url);
+                HttpResponseMessage responseDonations =
+                    await clientDonations.GetAsync(_donationsEndpoint, _cts.Token);
+                if (responseDonations.IsSuccessStatusCode)
+                {
+                    CreateMostRecentDonorStreamLabel(responseDonations);
+                }
+            }
+        }
+
+        private static void CreateMostRecentDonorStreamLabel(HttpResponseMessage responseDonations)
+        {
+            using (FileStream lastDonorData = new FileStream($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeMostRecentDonation.txt",
+                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                DonorDataModel[] donorList =
+                    DonorDataModel.FromJson(responseDonations.Content.ReadAsStringAsync().Result);
+                if (donorList.Any())
+                {
+                    DonorDataModel mostRecentDataModel = donorList[0];
+                    string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
+                    string donation = $"{donorName}: ${mostRecentDataModel.Amount:N2}";
+                    lastDonorData.SetLength(0);
+                    lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
+                    Console.WriteLine(donation);
+                }
+            }
+        }
+
         public void Dispose()
         {
             Logger.Info("Service dispose...");
-            SystemEvents.PowerModeChanged -= SystemEventsOnPowerModeChanged;
             _cts.Cancel();
         }
 
         public void Start()
         {
             Logger.Info("Service started...");
-            SystemEvents.PowerModeChanged += SystemEventsOnPowerModeChanged;
             FetchExtraLifeData();
         }
 
