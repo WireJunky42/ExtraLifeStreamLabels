@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace WireJunky.ExtraLife.TeamData
 {
-    public partial class TeamDataModel
+    public partial class TeamDataModel: IDisposable
     {
         [JsonProperty("fundraisingGoal")]
         public double FundraisingGoal { get; set; }
@@ -30,6 +31,19 @@ namespace WireJunky.ExtraLife.TeamData
 
         [JsonProperty("numDonations")]
         public long NumDonations { get; set; }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 
     public partial class TeamDataModel
