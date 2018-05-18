@@ -9,8 +9,6 @@ namespace WireJunky.ServiceFramework
 {
     public class BasicServiceStarter
     {
-        private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         public static void Run<T>(string serviceName) where T : IService, new()
         {
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
