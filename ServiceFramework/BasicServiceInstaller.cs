@@ -20,12 +20,13 @@ namespace WireJunky.ServiceFramework
         private static Installer CreateInstaller(string serviceName)
         {
             var installer = new TransactedInstaller();
-            installer.Installers.Add(new ServiceInstaller
+            var value = new ServiceInstaller
             {
-                ServiceName = serviceName,
-                DisplayName = serviceName,
                 StartType = ServiceStartMode.Automatic,
-            });
+                DisplayName = serviceName,
+                ServiceName = serviceName
+            };
+            installer.Installers.Add(value);
             installer.Installers.Add(new ServiceProcessInstaller
             {
                 Account = ServiceAccount.LocalSystem

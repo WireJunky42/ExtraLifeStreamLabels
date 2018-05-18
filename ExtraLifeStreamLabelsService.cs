@@ -21,13 +21,12 @@ namespace WireJunky.ExtraLife
 {
     public partial class ExtraLifeStreamLabelsService : IService
     {
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private CancellationTokenSource _cts = new CancellationTokenSource();
         private const string Url = "https://www.extra-life.org/api/";
         private static readonly string ParticipantEndpoint = $"participants/{ConfigurationManager.AppSettings["ParticipantId"]}";
         private readonly string _donationsEndpoint = $"{ParticipantEndpoint}/donations";
         private readonly string _teamEndpoint = $"teams/{ConfigurationManager.AppSettings["TeamId"]}";
         private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        private static Task _fetchData;
         private static ParticipantData _previousParticipantData = new ParticipantData();
 
 
@@ -38,11 +37,8 @@ namespace WireJunky.ExtraLife
 
         private async Task FetchExtraLifeData()
         {
-            Logger.Info($"Started Fetch Extra Life Data");
             if (!Directory.Exists($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}"))
                 Directory.CreateDirectory($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}");
-
-            try
             {
                 while (!_cts.IsCancellationRequested)
                 {
@@ -50,31 +46,34 @@ namespace WireJunky.ExtraLife
                     await Task.Delay(new TimeSpan(0, 0, 0, 15), _cts.Token);
                 }
             }
-            catch (Exception e)
-            {
-                Logger.Error(e.Message);
-            }
         }
 
         private async Task GetParticipantData()
         {
             using (var clientParticipant = new HttpClient())
             {
-                clientParticipant.BaseAddress = new Uri(Url);
-                HttpResponseMessage responseParticipant = await clientParticipant.GetAsync(ParticipantEndpoint, _cts.Token);
-                if (responseParticipant.IsSuccessStatusCode)
+                try
                 {
-                    using (ParticipantData currentParticipantData =
-                        ParticipantData.FromJson(responseParticipant.Content.ReadAsStringAsync().Result))
+                    clientParticipant.BaseAddress = new Uri(Url);
+                    HttpResponseMessage responseParticipant = await clientParticipant.GetAsync(ParticipantEndpoint, _cts.Token);
+                    if (responseParticipant.IsSuccessStatusCode)
                     {
-                        if (!currentParticipantData.Equals(_previousParticipantData))
+                        using (ParticipantData currentParticipantData =
+                            ParticipantData.FromJson(responseParticipant.Content.ReadAsStringAsync().Result))
                         {
-                            _previousParticipantData = currentParticipantData;
-                            CreateParticipantStreamLabel(currentParticipantData);
+                            if (!currentParticipantData.Equals(_previousParticipantData))
+                            {
+                                _previousParticipantData = currentParticipantData;
+                                CreateParticipantStreamLabel(currentParticipantData);
 
-                            await GetDonationData();
+                                await GetDonationData();
+                            }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
                 }
             }
         }
@@ -99,12 +98,19 @@ namespace WireJunky.ExtraLife
         {
             using (HttpClient clientDonations = new HttpClient())
             {
-                clientDonations.BaseAddress = new Uri(Url);
-                HttpResponseMessage responseDonations =
-                    await clientDonations.GetAsync(_donationsEndpoint, _cts.Token);
-                if (responseDonations.IsSuccessStatusCode)
+                try
                 {
-                    CreateMostRecentDonorStreamLabel(responseDonations);
+                    clientDonations.BaseAddress = new Uri(Url);
+                    HttpResponseMessage responseDonations =
+                        await clientDonations.GetAsync(_donationsEndpoint, _cts.Token);
+                    if (responseDonations.IsSuccessStatusCode)
+                    {
+                        CreateMostRecentDonorStreamLabel(responseDonations);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
                 }
             }
         }
@@ -130,35 +136,35 @@ namespace WireJunky.ExtraLife
 
         public void Dispose()
         {
-            Logger.Info("Service dispose...");
-            _cts.Cancel();
+            _cts.Cancel(false);
         }
 
         public void Start()
         {
-            Logger.Info("Service started...");
             FetchExtraLifeData();
         }
 
         public bool HandlePowerEvent(PowerBroadcastStatus powerBroadcastStatus)
         {
-            Logger.Info($"Received Power Broadcast Status: {powerBroadcastStatus}");
             switch (powerBroadcastStatus)
             {
 
-                case PowerBroadcastStatus.QuerySuspend:
                 case PowerBroadcastStatus.Suspend:
-                    FetchExtraLifeData().Dispose();
+                    _cts.Cancel(false);
                     break;
+                case PowerBroadcastStatus.ResumeSuspend:
+                    _previousParticipantData = new ParticipantData();
+                    _cts = new CancellationTokenSource();
+                    FetchExtraLifeData();
+                    break;
+                case PowerBroadcastStatus.BatteryLow:
+                case PowerBroadcastStatus.OemEvent:
+                case PowerBroadcastStatus.PowerStatusChange:
+                case PowerBroadcastStatus.QuerySuspend:
                 case PowerBroadcastStatus.QuerySuspendFailed:
                 case PowerBroadcastStatus.ResumeAutomatic:
                 case PowerBroadcastStatus.ResumeCritical:
-                case PowerBroadcastStatus.ResumeSuspend:
-                    FetchExtraLifeData();
                     break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(powerBroadcastStatus), powerBroadcastStatus, null);
             }
             return true;
         }

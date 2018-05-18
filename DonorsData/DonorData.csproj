@@ -5,6 +5,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>WireJunkySolutions.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

@@ -61,7 +61,7 @@ namespace WireJunky.ExtraLife.ParticipantDataModel
         public override int GetHashCode()
         {
             var hashcode = 159487263;
-            hashcode = hashcode * -147852369 + NumDonations.GetHashCode();
+            hashcode = hashcode * -147852369 + NumDonations.GetHashCode() + FundraisingGoal.GetHashCode() + SumDonations.GetHashCode();
             return hashcode;
         }
 
@@ -99,51 +99,3 @@ namespace WireJunky.ExtraLife.ParticipantDataModel
         };
     }
 }
-
-
-
-
-//using System;
-
-//namespace ParticipantDataModel
-//{
-//    public class ParticipantData : IEquatable<ParticipantData>
-//    {
-//        public string DisplayName { get; set; }
-//        public double FundraisingGoal { get; set; }
-//        public int ParticipantId { get; set; }
-//        public string TeamName { get; set; }
-//        public string EventName { get; set; }
-//        public string AvatarImageUrl { get; set; }
-//        public DateTime CreatedDateUtc { get; set; }
-//        public int EventId { get; set; }
-//        public double SumDonations { get; set; }
-//        public int TeamId { get; set; }
-//        public bool IsTeamCaptain { get; set; }
-//        public int NumDonations { get; set; }
-
-//        public double GetPercentOfGoalReached()
-//        {
-//            return SumDonations / FundraisingGoal * 100;
-//        }
-
-//        public bool Equals(ParticipantData other)
-//        {
-//            return other != null && other.GetHashCode() == GetHashCode();
-//        }
-
-//        public override bool Equals(object obj)
-//        {
-//            if (obj is ParticipantData data)
-//                return Equals(data);
-//            return false;
-//        }
-
-//        public override int GetHashCode()
-//        {
-//            var hashcode = 159487263;
-//            hashcode = hashcode * -147852369 + NumDonations.GetHashCode();
-//            return hashcode;
-//        }
-//    }
-//}
