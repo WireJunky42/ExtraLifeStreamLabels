@@ -15,7 +15,7 @@ namespace WireJunky.ExtraLife.DonorData
         public long ParticipantId { get; set; }
 
         [JsonProperty("amount")]
-        public double Amount { get; set; }
+        public double? Amount { get; set; }
 
         [JsonProperty("donorID")]
         public string DonorId { get; set; }

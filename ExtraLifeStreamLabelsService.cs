@@ -126,7 +126,10 @@ namespace WireJunky.ExtraLife
                 {
                     DonorDataModel mostRecentDataModel = donorList[0];
                     string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
-                    string donation = $"{donorName}: ${mostRecentDataModel.Amount:N2}";
+
+                    var donationAmount = mostRecentDataModel.Amount == null ? "Unknown" : $"{mostRecentDataModel.Amount:N2}";
+                    
+                    string donation = $"{donorName}: ${donationAmount}" ;
                     lastDonorData.SetLength(0);
                     lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
                     Console.WriteLine(donation);
