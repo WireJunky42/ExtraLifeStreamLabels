@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using NLog;
 using WireJunky.ExtraLife.DonorData;
 using WireJunky.ExtraLife.ParticipantDataModel;
+using WireJunky.ExtraLife.Properties;
 using WireJunky.ServiceFramework;
 
 #pragma warning disable 4014
@@ -105,7 +107,7 @@ namespace WireJunky.ExtraLife
                         await clientDonations.GetAsync(_donationsEndpoint, _cts.Token);
                     if (responseDonations.IsSuccessStatusCode)
                     {
-                        CreateMostRecentDonorStreamLabel(responseDonations);
+                        CreateDonorInfoStreamLabels(responseDonations);
                     }
                 }
                 catch (Exception e)
@@ -115,26 +117,52 @@ namespace WireJunky.ExtraLife
             }
         }
 
-        private static void CreateMostRecentDonorStreamLabel(HttpResponseMessage responseDonations)
+        private static void CreateDonorInfoStreamLabels(HttpResponseMessage responseDonations)
         {
+            DonorDataModel[] donorList =
+                DonorDataModel.FromJson(responseDonations.Content.ReadAsStringAsync().Result);
+
             using (FileStream lastDonorData = new FileStream($"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeMostRecentDonation.txt",
                 FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
-                DonorDataModel[] donorList =
-                    DonorDataModel.FromJson(responseDonations.Content.ReadAsStringAsync().Result);
                 if (donorList.Any())
                 {
                     DonorDataModel mostRecentDataModel = donorList[0];
-                    string donorName = mostRecentDataModel.DisplayName ?? "Anonymous";
-
-                    var donationAmount = mostRecentDataModel.Amount == null ? string.Empty : $": ${mostRecentDataModel.Amount:N2}";
-
-                    string donation = $"{donorName}{donationAmount}";
+                    string donation = $"{GetDonorName(mostRecentDataModel)}{GetDonationAmount(mostRecentDataModel)}    ";  //$"{donorName}{donationAmount}";
                     lastDonorData.SetLength(0);
                     lastDonorData.Write(new UTF8Encoding(true).GetBytes(donation), 0, donation.Length);
                     Console.WriteLine(donation);
                 }
             }
+
+            using (FileStream fullDonorListData = new FileStream(
+                $"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeFullDonorList.txt",
+                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                StringBuilder sb = new StringBuilder();
+                string donation = string.Empty;
+                fullDonorListData.SetLength(0);
+                List<DonorDataModel> fullDonorList = donorList.ToList();
+                foreach (var donor in fullDonorList)
+                {
+                    sb.Append($"{GetDonorName(donor)}{GetDonationAmount(donor)}    ");
+                }
+
+
+
+                string fullDonorData = sb.ToString();
+                fullDonorListData.Write(new UTF8Encoding(true).GetBytes(fullDonorData), 0, fullDonorData.Length);
+            }
+        }
+
+        private static string GetDonorName(DonorDataModel donorDataModel)
+        {
+            return donorDataModel.DisplayName ?? Resources.AnonymousDonorName;
+        }
+
+        private static string GetDonationAmount(DonorDataModel donorDataModel)
+        {
+            return donorDataModel.Amount == null ? string.Empty : $": ${donorDataModel.Amount:N2}";
         }
 
         public void Dispose()
