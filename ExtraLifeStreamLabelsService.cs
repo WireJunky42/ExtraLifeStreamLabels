@@ -148,8 +148,6 @@ namespace WireJunky.ExtraLife
                     sb.Append($"{GetDonorName(donor)}{GetDonationAmount(donor)}    ");
                 }
 
-
-
                 string fullDonorData = sb.ToString();
                 fullDonorListData.Write(new UTF8Encoding(true).GetBytes(fullDonorData), 0, fullDonorData.Length);
             }
