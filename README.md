@@ -19,4 +19,4 @@ The service is set to automatic and will start when Windows starts, however if y
 
 sc Start ExtraLifeStreamLabelService
 
-Like my work?  Consider supporting my Extra Life efforts by visiting https://wirejunky.net and making a donation.
+Like my work?  Consider supporting my Extra Life efforts by visiting wirejunky.net and making a donation.
