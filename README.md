@@ -20,3 +20,5 @@ The service is set to automatic and will start when Windows starts, however if y
 sc Start ExtraLifeStreamLabelService
 
 Like my work?  Consider supporting my Extra Life efforts by visiting https://www.extra-life.org/participant/WireJunky42 and making a donation.
+
+[![Build Status](https://wirejunkysolutions.visualstudio.com/WireJunkySolutions/_apis/build/status/WireJunky42.ExtraLifeStreamLabels?branchName=master)](https://wirejunkysolutions.visualstudio.com/WireJunkySolutions/_build/latest?definitionId=1&branchName=master)
