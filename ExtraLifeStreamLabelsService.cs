@@ -151,6 +151,23 @@ namespace WireJunky.ExtraLife
                 string fullDonorData = sb.ToString();
                 fullDonorListData.Write(new UTF8Encoding(true).GetBytes(fullDonorData), 0, fullDonorData.Length);
             }
+
+            using (FileStream fullDonorListWithMessageData = new FileStream(
+                $"{ConfigurationManager.AppSettings["StreamLabelOutputPath"]}//ExtraLifeFullDonorListWithMessages.txt",
+                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                StringBuilder sb = new StringBuilder();
+                string donation = string.Empty;
+                fullDonorListWithMessageData.SetLength(0);
+                List<DonorDataModel> fullDonorList = donorList.ToList();
+                foreach (var donor in fullDonorList)
+                {
+                    sb.Append($"{GetDonorName(donor)}{GetDonationAmount(donor)}{GetDonationMessage(donor)}    ");
+                }
+
+                string fullDonorData = sb.ToString();
+                fullDonorListWithMessageData.Write(new UTF8Encoding(true).GetBytes(fullDonorData), 0, fullDonorData.Length);
+            }
         }
 
         private static string GetDonorName(DonorDataModel donorDataModel)
@@ -161,6 +178,11 @@ namespace WireJunky.ExtraLife
         private static string GetDonationAmount(DonorDataModel donorDataModel)
         {
             return donorDataModel.Amount == null ? string.Empty : $": ${donorDataModel.Amount:N2}";
+        }
+
+        private static string GetDonationMessage(DonorDataModel donorDataModel)
+        {
+            return donorDataModel.Message == null ? string.Empty : $" Message: {donorDataModel.Message}";
         }
 
         public void Dispose()
